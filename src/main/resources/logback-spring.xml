@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+日志级别  按严重（重要）程度分级
+ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+-->
+
+<!--
+<configuration>：根节点
+    包含三个属性：
+        scan: 当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true。
+        scanPeriod: 设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒。当scan为true时，此属性生效。默认的时间间隔为1分钟。
+        debug: 当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。
+
+    包含以下子节点：
+        <appender>：负责写日志的组件，它有两个必要属性name和class。name指定appender名称，class指定appender的全限定名
+            常用appender类：
+            - ConsoleAppender：日志输出到控制台
+            - FileAppender：日志输出到文件
+            - RollingFileAppender：日志滚动输出到文件（先将日志输出到文件，当符合某个滚动策略时，将日志记录到其它文件）
+        <logger>：用来设置某一个包或具体的某一个类的日志打印级别、以及指定<appender>。
+        <root>：name为root的logger
+-->
+<configuration>
+
+    <!--
+    <proper>：用来定义变量值，它有两个属性name和value，通过<property>定义的值会被插入到logger上下文中，可以使“${}”来使用变量
+              或者通过resource属性，指定配置文件，在配置文件中通过key=value的方式定义变量值，也是使用“${}”来使用变量
+    -->
+    <property resource="logback.properties"/>
+
+    <!--
+    日志输出到控制台：ConsoleAppender类
+        <encoder>：对日志进行格式化。
+        <target>：字符串System.out(默认)或者System.err
+    -->
+    <appender name="CONSOLE-LOG" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${PATTERN_DEV}</pattern>
+        </layout>
+    </appender>
+
+
+    <!--
+    <filter>:过滤器，执行一个过滤器会有返回个枚举值，即DENY，NEUTRAL，ACCEPT其中之一。
+        - 返回DENY，日志将立即被抛弃不再经过其他过滤器；
+        - 返回NEUTRAL，有序列表里的下个过滤器过接着处理日志；
+        - 返回ACCEPT，日志会被立即处理，不再经过剩余过滤器。
+
+    过滤器被添加到<Appender> 中，为<Appender> 添加一个或多个过滤器后，可以用任意条件对日志进行过滤。
+    <Appender> 有多个过滤器时，按照配置顺序执行。
+        常用过滤器:
+            - LevelFilter
+            - ThresholdFilter
+            - EvaluatorFilter
+    参考文档: https://www.pudn.com/news/628f82a5bf399b7f351e39e1.html
+    -->
+
+    <!--
+    LevelFilter： 级别过滤器，根据日志级别进行过滤。如果日志级别等于配置级别，过滤器会根据onMath 和 onMismatch接收或拒绝日志。有以下子节点：
+        <level>:设置过滤级别
+        <onMatch>:用于配置符合过滤条件的操作
+        <onMismatch>:用于配置不符合过滤条件的操作
+    例如：将过滤器的日志级别配置为INFO，所有INFO级别的日志交给appender处理，非INFO级别的日志，被过滤掉。
+    -->
+    <!--
+    ThresholdFilter： 临界值过滤器，过滤掉低于指定临界值的日志。当日志级别等于或高于临界值时，过滤器返回NEUTRAL；当日志级别低于临界值时，日志会被拒绝。
+        <level>:设置过滤级别
+        <onMatch>:用于配置符合过滤条件的操作
+        <onMismatch>:用于配置不符合过滤条件的操作
+    例如：过滤掉所有低于INFO级别的日志。
+    -->
+    <!--
+    EvaluatorFilter： 求值过滤器，评估、鉴别日志是否符合指定条件。需要额外的两个JAR包，commons-compiler.jar和janino.jar有以下子节点：
+        <evaluator>:鉴别器，常用的鉴别器是JaninoEventEvaluato，也是默认的鉴别器，它以任意的java布尔值表达式作为求值条件，求值条件在配置文件解释过成功被动态编译，布尔值表达式返回true就表示符合过滤条件。evaluator有个子标签<expression>，用于配置求值条件。
+    -->
+
+    <!--
+    日志滚动输出到文件
+        <file>：被写入的文件名，可以是相对目录，也可以是绝对目录，如果上级目录不存在会自动创建，没有默认值。
+　　　　 <append>：如果是 true，日志被追加到文件结尾，如果是 false，清空现存文件，默认是true。
+　　　　 <rollingPolicy>:当发生滚动时，决定RollingFileAppender的行为，涉及文件移动和重命名。属性class定义具体的滚动策略类
+        常见的策略类:
+            <1> class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"： 最常用的滚动策略，它根据时间来制定滚动策略，既负责滚动也负责出发滚动。有以下子节点：
+                <fileNamePattern>：必要节点，包含文件名及“%d”转换符，“%d”可以包含一个java.text.SimpleDateFormat指定的时间格式，如：%d{yyyy-MM}。
+                    如果直接使用 %d，默认格式是 yyyy-MM-dd。RollingFileAppender的file字节点可有可无，通过设置file，可以为活动文件和归档文件指定不同位置，当前日志总是记录到file指定的文件（活动文件），活动文件的名字不会改变；
+                    如果没设置file，活动文件的名字会根据fileNamePattern 的值，每隔一段时间改变一次。“/”或者“\”会被当做目录分隔符。
+                <maxHistory>:
+                    可选节点，控制保留的归档文件的最大数量，超出数量就删除旧文件。假设设置每个月滚动，且<maxHistory>是6，则只保存最近6个月的文件，删除之前的旧文件。注意，删除旧文件是，那些为了归档而创建的目录也会被删除。
+
+            <2> class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy"： 查看当前活动文件的大小，如果超过指定大小会告知RollingFileAppender 触发当前活动文件滚动。只有一个节点:
+                <maxFileSize>:这是活动文件的大小，默认值是10MB。
+                <prudent>：当为true时，不支持FixedWindowRollingPolicy。支持TimeBasedRollingPolicy，但是有两个限制，1不支持也不允许文件压缩，2不能设置file属性，必须留空。
+                <triggeringPolicy >: 告知 RollingFileAppender 合适激活滚动。
+
+            <3> class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy" 根据固定窗口算法重命名文件的滚动策略。有以下子节点：
+                <minIndex>:窗口索引最小值
+                <maxIndex>:窗口索引最大值，当用户指定的窗口过大时，会自动将窗口设置为12。
+                <fileNamePattern>:必须包含“%i”例如，假设最小值和最大值分别为1和2，命名模式为 mylog%i.log,会产生归档文件mylog1.log和mylog2.log。还可以指定文件压缩选项，例如，mylog%i.log.gz 或者 没有log%i.log.zip
+    -->
+    <!--日志滚动输出到文件,日志级别为 比info级别高(包括info级别)的日志-->
+    <appender name="FILE-ALL-LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+
+        <encoder>
+            <pattern>${PATTERN_TEST}</pattern>
+        </encoder>
+
+        <!--滚动策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--路径-->
+            <fileNamePattern>${LOG_PATH}/${LOG_ALL}.%d{yyyyMMdd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!--日志滚动输出到文件,日志级别为 比error级别高(包括error级别)的日志-->
+    <appender name="FILE-ERROR-LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <encoder>
+            <pattern>${PATTERN_TEST}</pattern>
+        </encoder>
+
+        <!--滚动策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--路径-->
+            <fileNamePattern>${LOG_PATH}/${LOG_ERROR}.%d{yyyyMMdd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+
+    <!--
+    异步输出日志，不可单独使用，要配合appender-ref属性来指定其它appender
+    -->
+    <appender name="ASYNC-FILE-ALL" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>256</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="FILE-ALL-LOG"/>
+    </appender>
+
+    <appender name="ASYNC-FILE-ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>256</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="FILE-ERROR-LOG"/>
+    </appender>
+
+    <!--
+    <logger>：用来设置某一个包或具体的某一个类的日志打印级别、以及指定<appender>。<logger>仅有一个name属性，一个可选的level和一个可选的addtivity属性。
+        可以包含零个或多个<appender-ref>元素，标识这个appender将会添加到这个logger。
+        - name: 用来指定受此logger约束的某一个包或者具体的某一个类。
+        - level: 用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL和OFF，还有一个特殊值INHERITED或者同义词NULL，代表强制执行上级的级别。 如果未设置此属性，那么当前logger将会继承上级的级别。
+        - additivity: 是否向上级logger传递打印信息。默认是true。
+    -->
+    <!--Mybatis SQL语句打印-->
+    <logger name="xyz.sadli.dao" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE-LOG"/>
+    </logger>
+
+    <!--
+    <root>:它也是<logger>元素，但是它是根logger,是所有<logger>的上级。只有一个level属性，因为name已经被命名为"root",且已经是最上级了。
+        - level: 用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL和OFF，不能设置为INHERITED或者同义词NULL。 默认是DEBUG。
+    同<logger>一样，可以包含零个或多个<appender-ref>元素，标识这个appender将会添加到这个logger。
+    -->
+    <!--    开发环境,只开启控制台输出,不生成文件-->
+    <!--    <root level="DEBUG">-->
+    <!--        <appender-ref ref="CONSOLE-LOG"/>-->
+    <!--    </root>-->
+
+    <!--    测试环境配置:日志级别设置为INFO,防止生成大量日志数据占用空间-->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE-LOG"/>
+        <appender-ref ref="ASYNC-FILE-ALL"/>
+        <appender-ref ref="ASYNC-FILE-ERROR"/>
+    </root>
+
+
+    <!--
+    参考文档:https://www.cnblogs.com/gavincoder/p/10091757.html
+    -->
+</configuration>
