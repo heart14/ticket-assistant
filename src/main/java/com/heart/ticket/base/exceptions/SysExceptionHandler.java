@@ -2,6 +2,7 @@ package com.heart.ticket.base.exceptions;
 
 import com.heart.ticket.base.enums.RespCode;
 import com.heart.ticket.base.model.SysResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,10 +14,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Created: Administrator on 2022/3/9 17:35.
  * Editored:
  */
+@Slf4j
 @RestControllerAdvice
 public class SysExceptionHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(SysExceptionHandler.class);
 
     @ExceptionHandler({SysException.class})
     public SysResponse sysExceptionHandler(SysException e) {

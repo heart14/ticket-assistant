@@ -2,6 +2,7 @@ package com.heart.ticket.base.config;
 
 
 import com.heart.ticket.base.exceptions.SysException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,9 +17,9 @@ import java.util.Set;
  * Created: wfli on 2022/9/27 16:48.
  * Editored:
  */
+@Slf4j
 public class SysPropertyLoader {
 
-    private static final Logger log = LoggerFactory.getLogger(SysPropertyLoader.class);
     private static final String PROPERTIES_FILE_NAME = "system.properties";
     private static final String PERSISTENCE_PATH = "cache/persistence/";
     private static SysPropertyLoader instance;

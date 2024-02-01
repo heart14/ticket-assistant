@@ -3,6 +3,7 @@ package com.heart.ticket.base.filter;
 
 import com.heart.ticket.base.common.Constants;
 import com.heart.ticket.base.utils.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -19,10 +20,9 @@ import java.io.IOException;
  * Created: wfli on 2023/1/4 17:08.
  * Editored:
  */
+@Slf4j
 @Component // 为什么用这个@Component就可以，难道不要用@WebFilter吗
 public class CorsFilter implements Filter {
-
-    public static final Logger log = LoggerFactory.getLogger(CorsFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
