@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.heart.ticket.base.model.SysResponse;
 import com.heart.ticket.service.mt.MtSdkDishService;
 import com.meituan.sdk.model.waimaiNg.dish.dishQueryListByEpoiid.DishInfo;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import java.util.Map;
  * Created: wfli on 2023/5/16 15:19.
  * Editored:
  */
+@Api(tags = "美团sdk api")
 @Slf4j
 @RestController
 @RequestMapping("/mt/dish")

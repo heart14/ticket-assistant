@@ -4,6 +4,7 @@ import com.heart.ticket.base.enums.RespCode;
 import com.heart.ticket.base.exceptions.BizException;
 import com.heart.ticket.base.exceptions.SysException;
 import com.heart.ticket.base.model.SysResponse;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
  * Created: wfli on 2023/8/31 13:30.
  * Editored:
  */
+@Api(tags = "测试api")
 @Slf4j
 @RestController
 @RequestMapping("/test")
