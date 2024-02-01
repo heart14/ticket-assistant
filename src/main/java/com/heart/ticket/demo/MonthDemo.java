@@ -23,7 +23,7 @@ public class MonthDemo {
         int day = calendar.get(Calendar.DATE); // 获取日
         System.out.print(day + "日 ");
         int week = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 获取今天星期几（以星期日为第一天）
-        System.out.print("星期" + week+" ");
+        System.out.print("星期" + week + " ");
         int hour = calendar.get(Calendar.HOUR_OF_DAY); // 获取当前小时数（24 小时制）
         System.out.print(hour + "时 ");
         int minute = calendar.get(Calendar.MINUTE); // 获取当前分钟

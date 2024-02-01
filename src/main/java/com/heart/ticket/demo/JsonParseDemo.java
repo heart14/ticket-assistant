@@ -41,22 +41,7 @@ public class JsonParseDemo {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    static class Target{
+    static class Target {
 
         private String strKey;
 
@@ -98,7 +83,7 @@ public class JsonParseDemo {
         }
     }
 
-    static class Sub{
+    static class Sub {
         private String subKey;
 
         private Integer subInt;
@@ -128,7 +113,7 @@ public class JsonParseDemo {
         }
     }
 
-    static class Thd{
+    static class Thd {
         private String thirdKey;
 
         public String getThirdKey() {

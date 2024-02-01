@@ -19,13 +19,14 @@ public class FontTypeDemo {
      * 2.组装参数
      * 3.后置参数校验
      * 4.发送消息至MQ
+     *
      * @return
      */
     @Bean("commonSendTemplate")
-    public ProcessTemplate commonSendTemplate(){
+    public ProcessTemplate commonSendTemplate() {
         ProcessTemplate processTemplate = new ProcessTemplate();
-        processTemplate.setProcessList(Arrays.asList("preParamCheckAction","assembleAction",
-                "afterParamCheckAction","sendMqAction"));
+        processTemplate.setProcessList(Arrays.asList("preParamCheckAction", "assembleAction",
+                "afterParamCheckAction", "sendMqAction"));
         return processTemplate;
     }
 
@@ -33,19 +34,20 @@ public class FontTypeDemo {
      * pipeline流程控制器
      * 目前只有 普通发送的流程
      * 后续扩展则加BusinessCode和ProcessTemplate
+     *
      * @return
      */
     @Bean
-    public ProcessController processController(ProcessTemplate commonSendTemplate){
+    public ProcessController processController(ProcessTemplate commonSendTemplate) {
         ProcessController processController = new ProcessController();
-        Map<String,ProcessTemplate> templateConfig = new HashMap<>(4);
-        templateConfig.put(BusinessCode.COMMON_SEND.getCode(),commonSendTemplate);
+        Map<String, ProcessTemplate> templateConfig = new HashMap<>(4);
+        templateConfig.put(BusinessCode.COMMON_SEND.getCode(), commonSendTemplate);
         processController.setTemplateConfig(templateConfig);
         return processController;
     }
 
 
-    class ProcessTemplate{
+    class ProcessTemplate {
         private List<String> processList;
 
         public List<String> getProcessList() {
@@ -56,8 +58,9 @@ public class FontTypeDemo {
             this.processList = processList;
         }
     }
-    class ProcessController{
-        private Map<String,ProcessTemplate> templateConfig;
+
+    class ProcessController {
+        private Map<String, ProcessTemplate> templateConfig;
 
         public Map<String, ProcessTemplate> getTemplateConfig() {
             return templateConfig;
@@ -67,7 +70,8 @@ public class FontTypeDemo {
             this.templateConfig = templateConfig;
         }
     }
-    enum BusinessCode{
+
+    enum BusinessCode {
         COMMON_SEND("1");
 
         BusinessCode(String code) {

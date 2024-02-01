@@ -4,8 +4,6 @@ package com.heart.ticket.base.filter;
 import com.heart.ticket.base.common.Constants;
 import com.heart.ticket.base.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 

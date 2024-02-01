@@ -1,7 +1,6 @@
 package com.heart.ticket.base.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * About:

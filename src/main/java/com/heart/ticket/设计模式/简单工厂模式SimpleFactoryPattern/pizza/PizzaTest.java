@@ -34,7 +34,7 @@ public class PizzaTest {
             pizza4 = new BbqPizza();
         } else {
             System.out.println("不会做");
-            pizza4 =  null;
+            pizza4 = null;
         }
         pizza4.sale();
 

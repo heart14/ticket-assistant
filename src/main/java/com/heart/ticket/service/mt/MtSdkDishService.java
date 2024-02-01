@@ -36,7 +36,7 @@ public interface MtSdkDishService {
     /**
      * 7.2.7.更新菜品价格【sku的价格】
      *
-     * @param ePoiId ERP方门店id 最大长度100
+     * @param ePoiId        ERP方门店id 最大长度100
      * @param dishSkuPrices 菜品sku价格
      * @return
      */
@@ -59,14 +59,16 @@ public interface MtSdkDishService {
 
     /**
      * 7.2.27.批量更新菜品售卖状态
+     *
      * @param sellStatus 售卖状态，1表下架，0表上架
-     * @param foodData 菜品sku集合
+     * @param foodData   菜品sku集合
      * @return
      */
     String dishSkuSellStatus(Integer sellStatus, List<FoodData> foodData);
 
     /**
      * 7.2.32.查询门店菜品列表（包括套餐商品和普通商品）
+     *
      * @param offset
      * @param limit
      * @return
@@ -75,6 +77,7 @@ public interface MtSdkDishService {
 
     /**
      * 7.2.33.批量查询门店菜品（包括套餐商品和普通商品）
+     *
      * @param appFoodCodes
      * @return
      */

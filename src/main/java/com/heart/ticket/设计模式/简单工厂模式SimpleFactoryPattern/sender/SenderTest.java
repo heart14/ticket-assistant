@@ -8,6 +8,7 @@ public class SenderTest {
 
     /**
      * 所以在支付项目中，微信支付和支付宝支付就可以进行抽象出来
+     *
      * @param args
      */
     public static void main(String[] args) {

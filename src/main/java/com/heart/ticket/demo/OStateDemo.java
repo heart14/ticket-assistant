@@ -13,7 +13,7 @@ public class OStateDemo {
         OState oState = OState.cancelled;
         System.out.println(oState.name());
         System.out.println(oState.ordinal());
-        
+
 
     }
 }
