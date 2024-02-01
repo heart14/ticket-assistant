@@ -15,10 +15,10 @@ public enum RespCode {
      * XXX_EXCEPTION    出现系统异常    3xxx
      */
     SUCCESS(1000, "成功"),
-    FAIL(1001, "失败"),
-    INVALID(3001, "非法"),
-    EXCEPTION(5001, "异常"),
-    MTSDK_EXCEPTION(5002, "美团请求异常"),
+    SYS_EXCEPTION(1001, "异常"),
+    BIZ_FAIL(2001, "失败"),
+    BIZ_INVALID(3001, "非法"),
+    BIZ_MTSDK_EXCEPTION(2002, "美团请求异常"),
     END(9999, "END LINE");
 
     private int code;

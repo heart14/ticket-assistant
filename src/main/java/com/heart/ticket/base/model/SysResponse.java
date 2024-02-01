@@ -2,6 +2,10 @@ package com.heart.ticket.base.model;
 
 import com.heart.ticket.base.common.Constants;
 import com.heart.ticket.base.enums.RespCode;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.slf4j.MDC;
 
 /**
  * About:
@@ -9,55 +13,31 @@ import com.heart.ticket.base.enums.RespCode;
  * Created: wfli on 2023/5/16 15:21.
  * Editored:
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SysResponse {
 
+    /**
+     * SUCCESS | ERROR
+     */
     private String state;
+    /**
+     * 错误码
+     */
     private int code;
+    /**
+     * 错误信息
+     */
     private String msg;
+    /**
+     * 请求id
+     */
+    private String lid;
+    /**
+     * 数据
+     */
     private Object data;
-
-    public SysResponse() {
-    }
-
-    public SysResponse(String state, int code, String msg, Object data) {
-        this.state = state;
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
-    }
-
 
     public static SysResponse success() {
         return success(null);
@@ -72,7 +52,7 @@ public class SysResponse {
     }
 
     public static SysResponse success(int code, String msg, Object data) {
-        return new SysResponse(Constants.STATE_SUCCESS, code, msg, data);
+        return new SysResponse(Constants.STATE_SUCCESS, code, msg, MDC.get(Constants.FIELD_MDC_TRACE_ID), data);
     }
 
 
@@ -81,15 +61,15 @@ public class SysResponse {
     }
 
     public static SysResponse fail(Object data) {
-        return fail(RespCode.FAIL.getCode(), RespCode.FAIL.getMsg(), data);
+        return fail(RespCode.BIZ_FAIL.getCode(), RespCode.BIZ_FAIL.getMsg(), data);
     }
 
     public static SysResponse fail(int code, String msg) {
-        return fail(RespCode.FAIL.getCode(), RespCode.FAIL.getMsg(), null);
+        return fail(code, msg, null);
     }
 
     public static SysResponse fail(int code, String msg, Object data) {
-        return new SysResponse(Constants.STATE_FAIL, code, msg, data);
+        return new SysResponse(Constants.STATE_FAIL, code, msg, MDC.get(Constants.FIELD_MDC_TRACE_ID), data);
     }
 
 }

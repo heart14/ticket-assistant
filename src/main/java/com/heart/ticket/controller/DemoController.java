@@ -1,15 +1,17 @@
 package com.heart.ticket.controller;
 
-import com.heart.ticket.base.common.SystemProperties;
+import com.alibaba.fastjson.JSONArray;
 import com.heart.ticket.base.model.SysResponse;
-import com.heart.ticket.service.MtSdkDemoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.heart.ticket.service.mt.MtSdkDishService;
+import com.meituan.sdk.model.waimaiNg.dish.dishQueryListByEpoiid.DishInfo;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,41 +20,43 @@ import java.util.Map;
  * Created: wfli on 2023/5/16 15:19.
  * Editored:
  */
+@Slf4j
 @RestController
-@RequestMapping("/demo")
+@RequestMapping("/mt/dish")
 public class DemoController {
 
-    public static final Logger log = LoggerFactory.getLogger(DemoController.class);
+    private final MtSdkDishService mtSdkDishService;
 
-    private final MtSdkDemoService mtSdkDemoService;
-
-    public DemoController(MtSdkDemoService mtSdkDemoService) {
-        this.mtSdkDemoService = mtSdkDemoService;
+    public DemoController(MtSdkDishService mtSdkDishService) {
+        this.mtSdkDishService = mtSdkDishService;
     }
 
+    @ApiOperation("美团查询分类")
     @PostMapping("/queryCatList")
     public SysResponse queryCatList(@RequestBody Map<String, Object> map) {
-        Long developerId = Long.valueOf(String.valueOf(map.get("developerId")));
-        String signKey = String.valueOf(map.get("signKey"));
-        String appAuthToken = String.valueOf(map.get("appAuthToken"));
-        return SysResponse.success(mtSdkDemoService.queryCatList(developerId, signKey, appAuthToken));
+        return SysResponse.success(mtSdkDishService.queryCatList());
     }
 
+    @ApiOperation("美团查询菜品")
     @PostMapping("/queryFoodList")
     public SysResponse queryFoodList(@RequestBody Map<String, Object> map) {
-        Long developerId = Long.valueOf(String.valueOf(map.get("developerId")));
-        String signKey = String.valueOf(map.get("signKey"));
-        String appAuthToken = String.valueOf(map.get("appAuthToken"));
-        return SysResponse.success(mtSdkDemoService.queryFoodList(developerId, signKey, appAuthToken));
+        return SysResponse.success(mtSdkDishService.queryFoodList());
     }
 
+    @ApiOperation("美团查询属性")
     @PostMapping("/queryPropertyList")
     public SysResponse queryPropertyList(@RequestBody Map<String, Object> map) {
-        Long developerId = Long.valueOf(String.valueOf(map.get("developerId")));
-        String signKey = String.valueOf(map.get("signKey"));
-        String appAuthToken = String.valueOf(map.get("appAuthToken"));
         String eDishCode = String.valueOf(map.get("eDishCode"));
-        return SysResponse.success(mtSdkDemoService.queryPropertyList(developerId, signKey, appAuthToken,eDishCode));
+        return SysResponse.success(mtSdkDishService.queryPropertyList(eDishCode));
+    }
+
+    @ApiOperation("美团批量新增菜品")
+    @PostMapping("/dishBatchUpload")
+    public SysResponse dishBatchUpload(@RequestBody Map<String, Object> map) {
+        String ePoiId = String.valueOf(map.get("ePoiId"));
+        String dishes = String.valueOf(map.get("dishes"));
+        List<DishInfo> parseArray = JSONArray.parseArray(dishes, DishInfo.class);
+        return SysResponse.success(mtSdkDishService.dishBatchUpload(ePoiId, parseArray));
     }
 
 }
