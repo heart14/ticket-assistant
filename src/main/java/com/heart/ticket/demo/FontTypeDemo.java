@@ -21,7 +21,7 @@ public class FontTypeDemo {
      * 4.发送消息至MQ
      * @return
      */
-//    @Bean("commonSendTemplate")
+    @Bean("commonSendTemplate")
     public ProcessTemplate commonSendTemplate(){
         ProcessTemplate processTemplate = new ProcessTemplate();
         processTemplate.setProcessList(Arrays.asList("preParamCheckAction","assembleAction",
@@ -36,10 +36,10 @@ public class FontTypeDemo {
      * @return
      */
     @Bean
-    public ProcessController processController(){
+    public ProcessController processController(ProcessTemplate commonSendTemplate){
         ProcessController processController = new ProcessController();
         Map<String,ProcessTemplate> templateConfig = new HashMap<>(4);
-        templateConfig.put(BusinessCode.COMMON_SEND.getCode(),commonSendTemplate());
+        templateConfig.put(BusinessCode.COMMON_SEND.getCode(),commonSendTemplate);
         processController.setTemplateConfig(templateConfig);
         return processController;
     }
