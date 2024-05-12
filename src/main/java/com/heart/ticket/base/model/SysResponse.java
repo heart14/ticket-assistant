@@ -33,7 +33,7 @@ public class SysResponse {
     /**
      * 请求id
      */
-    private String lid;
+    private String logid;
     /**
      * 数据
      */
