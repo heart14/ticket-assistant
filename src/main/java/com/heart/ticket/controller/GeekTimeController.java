@@ -9,10 +9,7 @@ import com.heart.ticket.base.model.SysResponse;
 import com.heart.ticket.service.geek.GeekTimeService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -195,15 +192,15 @@ public class GeekTimeController {
         return SysResponse.success();
     }
 
-    @GetMapping("/login")
-    public SysResponse login(String cellphone,String password){
-        geekTimeService.login(cellphone,password);
+    @GetMapping("/download")
+    public SysResponse geekTime(String cellphone,String password){
+        geekTimeService.geekTime( cellphone, password);
         return SysResponse.success();
     }
 
-    @GetMapping("/download")
-    public SysResponse geekTime(){
-        geekTimeService.geekTime();
+    @GetMapping("/sku/{skuId}")
+    public SysResponse geekTime(@PathVariable("skuId") long skuId){
+        geekTimeService.geekTime(skuId);
         return SysResponse.success();
     }
 }

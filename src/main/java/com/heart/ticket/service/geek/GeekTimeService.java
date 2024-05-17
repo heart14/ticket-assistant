@@ -6,9 +6,20 @@ package com.heart.ticket.service.geek;
  */
 public interface GeekTimeService {
 
-    void login(String cellphone,String password);
+    /**
+     * 设置较大的pageSize，一把查询所有个人中心-我的课程，然后进行下载
+     */
+    void geekTime(String cellphone,String password);
 
-    void geekTime();
-
+    /**
+     * 分页查询个人中心-我的课程，然后进行下载
+     */
     void geekTimeCyclic();
+
+    /**
+     * 根据skuId下载单个课程
+     *
+     * @param skuId
+     */
+    void geekTime(long skuId);
 }

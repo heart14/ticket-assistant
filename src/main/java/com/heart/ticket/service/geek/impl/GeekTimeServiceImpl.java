@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alipay.api.internal.util.StringUtils;
 import com.heart.ticket.base.model.HttpResult;
 import com.heart.ticket.base.model.geek.Course;
 import com.heart.ticket.base.model.geek.Detail;
@@ -42,19 +43,58 @@ public class GeekTimeServiceImpl implements GeekTimeService {
     /**
      * 通过login接口可获取cookie
      */
-    public static final String COOKIE = "GCID=2891c41-a128d74-42cb21c-9f02a0f;GRID=2891c41-a128d74-42cb21c-9f02a0f;GCESS=BgMEeoc_ZgwBAQgBAwYEzUusvgsCBgAJAREBCPN1FQAAAAAAAgR6hz9mCgQAAAAADQEBBQQAAAAABAQAjScABwR8jNZX;gksskpitn=568be447-ab4a-4c69-a87f-b55d7533c3dd;GRID=1d7c67a-771ebfc-de6c71a-c93dc5c;SERVERID=1fa1f330efedec1559b3abbcb6e30f50|1715439482|1715439482";
-    public static final String BASE_DOWNLOAD_PATH = "D:\\98-极客时间";
+    public String COOKIE = "GCID=b08b131-11a42f5-a92a71a-ef78d74;GRID=b08b131-11a42f5-a92a71a-ef78d74;GCESS=BgEI83UVAAAAAAANAQEJAREEBACNJwAMAQEIAQMLAgYAAgRrGkdmBQQAAAAABgQ8FZJeAwRrGkdmBwSpG4qRCgQAAAAA;gksskpitn=3b6825ff-fd81-4189-92e7-bb177105cbdd;GRID=f94842b-1d206dc-cac3b8d-4d951ab;SERVERID=1fa1f330efedec1559b3abbcb6e30f50|1715935851|1715935851";
+//    public String COOKIE = "";
+    public static final String BASE_DOWNLOAD_PATH = "D:\\98-极客时间\\李文飞";
     /**
      * 音频文件下载控制：0正常下载，1空文件占位，2不下载
      */
-    public static final int AUDIO_DL_FLAG = 0;
+    public static final int AUDIO_DL_FLAG = 1;
     /**
      * 视频文件下载控制：0正常下载，1空文件占位，2不下载
      */
-    public static final int VIDEO_DL_FLAG = 0;
+    public static final int VIDEO_DL_FLAG = 1;
 
-    @Override
-    public void login(String cellphone, String password) {
+    /**
+     * 下载课程类型
+     */
+    public static final int DL_COURSE_TYPE = CourseType.体系课.type;
+
+    private enum CourseType{
+        所有类型(0),体系课(1),企业课程(3),每日一课(4),大厂案例(5),生态课(6),公开课(8),其他(10),训练营(12);
+
+        CourseType(int type) {
+            this.type = type;
+        }
+
+        private int type;
+
+        public int getType() {
+            return type;
+        }
+
+        public void setType(int type) {
+            this.type = type;
+        }
+
+        public static String getTypeName(int type){
+            for (CourseType courseType : CourseType.values()) {
+                if (courseType.getType() == type) {
+                    return courseType.name();
+                }
+            }
+            return "";
+        }
+    }
+
+    /**
+     * 下载模式
+     * 0-覆盖下载，已下载课程会重新下载覆盖原文件
+     * 1-增量下载，已下载课程会跳过
+     */
+    public static final int DL_MODEL = 1;
+
+    private void login(String cellphone, String password) {
         String url = "https://account.geekbang.org/account/ticket/login";
         Map<String, Object> param = new HashMap<>();
         param.put("platform", 3);
@@ -89,13 +129,18 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         // 删除末尾的 ";"
         sb.deleteCharAt(sb.length() - 1);
         System.out.println("cookie:" + sb.toString());
+        COOKIE = sb.toString();
     }
 
     /**
      * 设置较大的pageSize，一把查询完所有课程
      */
     @Override
-    public void geekTime() {
+    public void geekTime(String cellphone,String password) {
+        // 如果未登录，则进行登录
+        if (StringUtils.isEmpty(COOKIE)) {
+            login(cellphone,password);
+        }
         try {
             Course course = getCourse();
             if (course == null) {
@@ -104,7 +149,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
             Map<String, Object> failList = new HashMap<>();
             // 处理页面所有课程集合
             pageProcess(course, failList);
-            System.out.println("下载完成！开始重试...");
+            System.out.println("下载完成！");
             // 进行失败列表重试
             failListProcess(failList);
             System.out.println("下载任务结束！");
@@ -120,6 +165,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
      * @param failList
      */
     private void failListProcess(Map<String, Object> failList) {
+        System.out.println("开始进行失败任务重试...");
         List<Long> fail_lesson = (List<Long>) failList.get("fail_lesson");
         List<String> fail_article = (List<String>) failList.get("fail_article");
 
@@ -135,6 +181,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         if (fail_lesson == null) {
             return;
         }
+        // 重试时不检查课程是否已下载、不检查当前课程类型是否配置为需要下载
         try {
             for (Long sku : fail_lesson) {
                 Lesson lesson = null;
@@ -225,67 +272,97 @@ public class GeekTimeServiceImpl implements GeekTimeService {
      * @throws ParseException
      */
     private void pageProcess(Course course, Map<String, Object> failList) throws IOException, ParseException {
+        // 初始化失败重试集合
         List<Long> fail_lesson = new ArrayList<>();
         List<String> fail_article = new ArrayList<>();
+
+        // 加载已下载课程列表
+        Map<String, String> existsLessons = loadLessonNameList();
 
         // 账号下所有课程集合
         List<CourseInfo> courseList = course.getList();
         for (CourseInfo courseInfo : courseList) {
             System.out.println("****" + courseInfo.getTitle());
-            // 遍历获取每一门课程
-            Lesson lesson = null;
-            try {
-                lesson = getArticle(courseInfo.getSku());
-            } catch (Exception e) {
-                System.err.println("    sku:" + courseInfo.getSku() + "课程信息获取失败，请关注");
-                //failList
-                fail_lesson.add(courseInfo.getSku());
-            }
-            if (lesson == null) {
+            // 判断是否已下载，可以根据课程名跳过已下载课程
+            if (DL_MODEL == 1 && checkExists(existsLessons, courseInfo.getTitle())) {
+                System.err.println("    |--["+courseInfo.getTitle()+"]课程已存在，位于/" + existsLessons.get(courseInfo.getTitle()) + "目录下");
                 continue;
             }
-            // 课程内包含的所有章节集合
-            List<ChapterInfo> chapterList = lesson.getList();
-            // 遍历获取每个章节
-            for (ChapterInfo chapterInfo : chapterList) {
-                System.out.println("  |--" + chapterInfo.getTitle());
-                // 章节内包含的所有讲集合
-                List<ArticleInfo> articleList = chapterInfo.getArticle_list();
-                // 遍历获取每一讲的内容
-                for (ArticleInfo info : articleList) {
-                    Detail detail = null;
-                    try {
-                        detail = getDetail(info.getId());
-                    } catch (Exception e) {
-                        System.err.println("    detailId:" + info.getId() + "讲信息获取失败，请关注");
-                        //failList
-                        // 捕获异常，保存到失败列表，然后继续下载下一个内容，不要中断程序
-                        //  失败列表要分别存储：
-                        //  失败的课程列表/course/articles  查询参数courseInfo.getSku()
-                        //  失败的讲列表/article/detail  查询参数info.getId()
-                        //  然后进行重试处理
-                        //  处理时，对失败的课程，整个课程重新下载，对失败的讲，只重新下载单个讲
-                        fail_article.add(info.getId());
-                    }
-                    if (detail == null) {
-                        continue;
-                    }
-                    // 下载
-                    try {
-                        dlContent(detail);
-                        dlAudio(detail);
-                        dlVideo(detail);
-                    } catch (Exception e) {
-                        System.err.println("    " + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
-                        e.printStackTrace();
-                        //failList 某个课程的内容下载失败了，也要保存到失败列表，然后进行重试
-                        fail_article.add(info.getId());
-                    }
+            // 判断课程类型的配置，决定是否下载
+            if (DL_COURSE_TYPE != CourseType.所有类型.type) {
+                // 不是下载所有类型的话，要具体判断
+                if (courseInfo.getCourse_type() != DL_COURSE_TYPE) {
+                    System.err.println("    |--已配置下载课程类型为：" + CourseType.getTypeName(DL_COURSE_TYPE) + "，当前为" + CourseType.getTypeName(courseInfo.getCourse_type()) + ":"+courseInfo.getTitle()+"，跳过此课程");
+                    continue;
                 }
             }
+            // 配置为所有类型，直接下载
+
+            // 开始处理每一个课程
+            pageProcessDownload(courseInfo,fail_lesson,fail_article);
             failList.put("fail_lesson", fail_lesson);
             failList.put("fail_article", fail_article);
             System.out.println("============");
+        }
+    }
+
+    /**
+     * 处理课程下载
+     * @param courseInfo
+     * @param fail_lesson
+     * @param fail_article
+     */
+    private void pageProcessDownload(CourseInfo courseInfo, List<Long> fail_lesson,List<String> fail_article){
+        // 遍历获取每一门课程
+        Lesson lesson = null;
+        try {
+            lesson = getArticle(courseInfo.getSku());
+        } catch (Exception e) {
+            System.err.println("    sku:" + courseInfo.getSku() + "课程信息获取失败，请关注");
+            //failList
+            fail_lesson.add(courseInfo.getSku());
+        }
+        if (lesson == null) {
+            return;
+        }
+        // 课程内包含的所有章节集合
+        List<ChapterInfo> chapterList = lesson.getList();
+        // 遍历获取每个章节
+        for (ChapterInfo chapterInfo : chapterList) {
+            System.out.println("  |--" + chapterInfo.getTitle());
+            // 章节内包含的所有讲集合
+            List<ArticleInfo> articleList = chapterInfo.getArticle_list();
+            // 遍历获取每一讲的内容
+            for (ArticleInfo info : articleList) {
+                Detail detail = null;
+                try {
+                    detail = getDetail(info.getId());
+                } catch (Exception e) {
+                    System.err.println("    detailId:" + info.getId() + "讲信息获取失败，请关注");
+                    //failList
+                    // 捕获异常，保存到失败列表，然后继续下载下一个内容，不要中断程序
+                    //  失败列表要分别存储：
+                    //  失败的课程列表/course/articles  查询参数courseInfo.getSku()
+                    //  失败的讲列表/article/detail  查询参数info.getId()
+                    //  然后进行重试处理
+                    //  处理时，对失败的课程，整个课程重新下载，对失败的讲，只重新下载单个讲
+                    fail_article.add(info.getId());
+                }
+                if (detail == null) {
+                    continue;
+                }
+                // 下载
+                try {
+                    dlContent(detail);
+                    dlAudio(detail);
+                    dlVideo(detail);
+                } catch (Exception e) {
+                    System.err.println("    " + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
+                    e.printStackTrace();
+                    //failList 某个课程的内容下载失败了，也要保存到失败列表，然后进行重试
+                    fail_article.add(info.getId());
+                }
+            }
         }
     }
 
@@ -651,5 +728,53 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         }
         JSONObject resultObject = JSONUtil.parseObj(result.getHttpResult());
         return JSONUtil.toBean(resultObject.getStr("data"), Course.class);
+    }
+
+
+    @Override
+    public void geekTime(long skuId) {
+        List<Long> sku = new ArrayList<>();
+        sku.add(skuId);
+
+        retryFailLesson(sku);
+    }
+
+
+    /**
+     * 加载已下载课程集合
+     * @return
+     */
+    private Map<String, String> loadLessonNameList(){
+        String path = "D:\\98-极客时间\\";
+        Map<String, String> map = new HashMap<>();
+        File[] subDirectories = new File(path).listFiles(File::isDirectory);
+        if (subDirectories != null) {
+            for (File subDirectory : subDirectories) {
+                File[] firstLevelSubDirectories = subDirectory.listFiles(File::isDirectory);
+                if (firstLevelSubDirectories != null) {
+                    for (File firstLevelSubDirectory : firstLevelSubDirectories) {
+//                        System.out.println(subDirectory.getName()+" - " + firstLevelSubDirectory.getName());
+                        map.put(firstLevelSubDirectory.getName(), subDirectory.getName());
+                    }
+                }
+            }
+            return map;
+        }
+        return null;
+    }
+
+    /**
+     * 检查课程是否已下载
+     *  - check等于false说明课程未下载过，需下载
+     *  - check等于true说明课程已下载，不要再下载
+     * @param existsLessons 已下载课程集合
+     * @param title 当前课程名称
+     * @return
+     */
+    private boolean checkExists(Map<String, String> existsLessons,String title){
+        if (existsLessons == null||existsLessons.size()==0) {
+            return false;
+        }
+        return existsLessons.containsKey(title);
     }
 }
