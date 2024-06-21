@@ -2,6 +2,7 @@ package com.heart.ticket.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.heart.ticket.base.model.SysResponse;
+import com.heart.ticket.base.model.query.ListQuery;
 import com.heart.ticket.service.mt.MtSdkDishService;
 import com.meituan.sdk.model.waimaiNg.dish.dishQueryListByEpoiid.DishInfo;
 import io.swagger.annotations.Api;
@@ -59,6 +60,12 @@ public class DemoController {
         String dishes = String.valueOf(map.get("dishes"));
         List<DishInfo> parseArray = JSONArray.parseArray(dishes, DishInfo.class);
         return SysResponse.success(mtSdkDishService.dishBatchUpload(ePoiId, parseArray));
+    }
+
+    @PostMapping("/list")
+    public SysResponse listTest(@RequestBody ListQuery query){
+        log.info("query:{}", query);
+        return SysResponse.success(query);
     }
 
 }

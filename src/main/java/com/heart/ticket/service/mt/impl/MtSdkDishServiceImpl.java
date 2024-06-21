@@ -50,7 +50,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -74,7 +74,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -96,7 +96,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -119,7 +119,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -141,7 +141,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -163,7 +163,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -185,7 +185,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());
@@ -206,7 +206,7 @@ public class MtSdkDishServiceImpl extends MtSdkBaseService implements MtSdkDishS
                 return response.getData();
             } else {
                 //调用失败，通过getCode和getMsg获取错误码和错误描述
-                throw new SysException(Integer.valueOf(response.getCode()), response.getMsg());
+                throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), "[" + response.getCode() + "]" + response.getMsg());
             }
         } catch (MtSdkException e) {
             throw new SysException(RespCode.BIZ_MTSDK_EXCEPTION.getCode(), RespCode.BIZ_MTSDK_EXCEPTION.getMsg());

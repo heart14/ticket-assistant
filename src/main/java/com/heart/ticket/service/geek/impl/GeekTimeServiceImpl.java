@@ -43,8 +43,8 @@ public class GeekTimeServiceImpl implements GeekTimeService {
     /**
      * 通过login接口可获取cookie
      */
-    public String COOKIE = "GCID=b08b131-11a42f5-a92a71a-ef78d74;GRID=b08b131-11a42f5-a92a71a-ef78d74;GCESS=BgEI83UVAAAAAAANAQEJAREEBACNJwAMAQEIAQMLAgYAAgRrGkdmBQQAAAAABgQ8FZJeAwRrGkdmBwSpG4qRCgQAAAAA;gksskpitn=3b6825ff-fd81-4189-92e7-bb177105cbdd;GRID=f94842b-1d206dc-cac3b8d-4d951ab;SERVERID=1fa1f330efedec1559b3abbcb6e30f50|1715935851|1715935851";
-//    public String COOKIE = "";
+//    public String COOKIE = "GCID=b08b131-11a42f5-a92a71a-ef78d74;GRID=b08b131-11a42f5-a92a71a-ef78d74;GCESS=BgEI83UVAAAAAAANAQEJAREEBACNJwAMAQEIAQMLAgYAAgRrGkdmBQQAAAAABgQ8FZJeAwRrGkdmBwSpG4qRCgQAAAAA;gksskpitn=3b6825ff-fd81-4189-92e7-bb177105cbdd;GRID=f94842b-1d206dc-cac3b8d-4d951ab;SERVERID=1fa1f330efedec1559b3abbcb6e30f50|1715935851|1715935851";
+    public String COOKIE = "";
     public static final String BASE_DOWNLOAD_PATH = "D:\\98-极客时间\\李文飞";
     /**
      * 音频文件下载控制：0正常下载，1空文件占位，2不下载
@@ -54,6 +54,10 @@ public class GeekTimeServiceImpl implements GeekTimeService {
      * 视频文件下载控制：0正常下载，1空文件占位，2不下载
      */
     public static final int VIDEO_DL_FLAG = 1;
+    /**
+     * 归档控制：false不归档，true归档
+     */
+    public static final boolean ARCHIVE_FLAG = false;
 
     /**
      * 下载课程类型
@@ -113,7 +117,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         CloseableHttpResponse response = null;
         try {
             response = HttpUtils.httpPost(url, JSONUtil.toJsonStr(param), headers);
-            System.out.println(response);
+            log.info("login response:"+response);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,7 +132,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         }
         // 删除末尾的 ";"
         sb.deleteCharAt(sb.length() - 1);
-        System.out.println("cookie:" + sb.toString());
+        log.info("cookie:" + sb.toString());
         COOKIE = sb.toString();
     }
 
@@ -149,10 +153,10 @@ public class GeekTimeServiceImpl implements GeekTimeService {
             Map<String, Object> failList = new HashMap<>();
             // 处理页面所有课程集合
             pageProcess(course, failList);
-            System.out.println("下载完成！");
+            log.info("下载完成！");
             // 进行失败列表重试
             failListProcess(failList);
-            System.out.println("下载任务结束！");
+            log.info("下载任务结束！");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
@@ -165,10 +169,11 @@ public class GeekTimeServiceImpl implements GeekTimeService {
      * @param failList
      */
     private void failListProcess(Map<String, Object> failList) {
-        System.out.println("开始进行失败任务重试...");
         List<Long> fail_lesson = (List<Long>) failList.get("fail_lesson");
         List<String> fail_article = (List<String>) failList.get("fail_article");
-
+        if ((fail_lesson != null&&fail_lesson.size()>0)||(fail_article != null&&fail_article.size()>0)) {
+            log.info("开始进行失败任务重试...");
+        }
         retryFailLesson(fail_lesson);
         retryFailArticle(fail_article);
     }
@@ -189,17 +194,17 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                     lesson = getArticle(sku);
                 } catch (Exception e) {
                     // 只重试这一次，再失败不管了
-                    System.err.println("    retry sku:" + sku + "课程信息获取失败，请关注");
+                    log.error("    retry sku:" + sku + "课程信息获取失败，请关注");
                 }
                 if (lesson == null) {
                     continue;
                 }
-                System.out.println("retry****" + sku);
+                log.info("retry****" + sku);
                 // 课程内包含的所有章节集合
                 List<ChapterInfo> chapterList = lesson.getList();
                 // 遍历获取每个章节
                 for (ChapterInfo chapterInfo : chapterList) {
-                    System.out.println("  retry|--" + chapterInfo.getTitle());
+                    log.info("  retry|--" + chapterInfo.getTitle());
                     // 章节内包含的所有讲集合
                     List<ArticleInfo> articleList = chapterInfo.getArticle_list();
                     // 遍历获取每一讲的内容
@@ -209,7 +214,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                             detail = getDetail(info.getId());
                         } catch (Exception e) {
                             // 只重试这一次，再失败不管了
-                            System.err.println("    retry detailId:" + info.getId() + "讲信息获取失败，请关注");
+                            log.error("    retry detailId:" + info.getId() + "讲信息获取失败，请关注");
                         }
                         if (detail == null) {
                             continue;
@@ -221,7 +226,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                             dlVideo(detail);
                         } catch (Exception e) {
                             // 只重试这一次，再失败不管了
-                            System.err.println("    retry" + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
+                            log.error("    retry" + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
                             e.printStackTrace();
                         }
                     }
@@ -247,7 +252,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
             try {
                 detail = getDetail(id);
             } catch (Exception e) {
-                System.err.println("    retry detailId:" + id + "讲信息获取失败，请关注");
+                log.error("    retry detailId:" + id + "讲信息获取失败，请关注");
             }
             if (detail == null) {
                 continue;
@@ -258,7 +263,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                 dlAudio(detail);
                 dlVideo(detail);
             } catch (Exception e) {
-                System.err.println("    retry" + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
+                log.error("    retry" + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
                 e.printStackTrace();
             }
         }
@@ -282,17 +287,17 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         // 账号下所有课程集合
         List<CourseInfo> courseList = course.getList();
         for (CourseInfo courseInfo : courseList) {
-            System.out.println("****" + courseInfo.getTitle());
+            log.info("****" + courseInfo.getTitle());
             // 判断是否已下载，可以根据课程名跳过已下载课程
             if (DL_MODEL == 1 && checkExists(existsLessons, courseInfo.getTitle())) {
-                System.err.println("    |--["+courseInfo.getTitle()+"]课程已存在，位于/" + existsLessons.get(courseInfo.getTitle()) + "目录下");
+                log.error("    ["+courseInfo.getTitle()+"]课程已存在，位于 /" + existsLessons.get(courseInfo.getTitle()) + " 目录");
                 continue;
             }
             // 判断课程类型的配置，决定是否下载
             if (DL_COURSE_TYPE != CourseType.所有类型.type) {
                 // 不是下载所有类型的话，要具体判断
                 if (courseInfo.getCourse_type() != DL_COURSE_TYPE) {
-                    System.err.println("    |--已配置下载课程类型为：" + CourseType.getTypeName(DL_COURSE_TYPE) + "，当前为" + CourseType.getTypeName(courseInfo.getCourse_type()) + ":"+courseInfo.getTitle()+"，跳过此课程");
+                    log.error("    ["+courseInfo.getTitle()+"] - "+CourseType.getTypeName(courseInfo.getCourse_type())+" 跳过下载。指定下载类型为：" + CourseType.getTypeName(DL_COURSE_TYPE));
                     continue;
                 }
             }
@@ -302,7 +307,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
             pageProcessDownload(courseInfo,fail_lesson,fail_article);
             failList.put("fail_lesson", fail_lesson);
             failList.put("fail_article", fail_article);
-            System.out.println("============");
+            log.info("============");
         }
     }
 
@@ -318,7 +323,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         try {
             lesson = getArticle(courseInfo.getSku());
         } catch (Exception e) {
-            System.err.println("    sku:" + courseInfo.getSku() + "课程信息获取失败，请关注");
+            log.error("    sku:" + courseInfo.getSku() + "课程信息获取失败，请关注");
             //failList
             fail_lesson.add(courseInfo.getSku());
         }
@@ -329,7 +334,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         List<ChapterInfo> chapterList = lesson.getList();
         // 遍历获取每个章节
         for (ChapterInfo chapterInfo : chapterList) {
-            System.out.println("  |--" + chapterInfo.getTitle());
+            log.info("  |--" + chapterInfo.getTitle());
             // 章节内包含的所有讲集合
             List<ArticleInfo> articleList = chapterInfo.getArticle_list();
             // 遍历获取每一讲的内容
@@ -338,7 +343,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                 try {
                     detail = getDetail(info.getId());
                 } catch (Exception e) {
-                    System.err.println("    detailId:" + info.getId() + "讲信息获取失败，请关注");
+                    log.error("    detailId:" + info.getId() + "讲信息获取失败，请关注");
                     //failList
                     // 捕获异常，保存到失败列表，然后继续下载下一个内容，不要中断程序
                     //  失败列表要分别存储：
@@ -357,7 +362,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                     dlAudio(detail);
                     dlVideo(detail);
                 } catch (Exception e) {
-                    System.err.println("    " + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
+                    log.error("    " + detail.getArticle().getTitle() + "讲内容下载失败，请关注");
                     e.printStackTrace();
                     //failList 某个课程的内容下载失败了，也要保存到失败列表，然后进行重试
                     fail_article.add(info.getId());
@@ -376,7 +381,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         String title = detail.getChapter().getTitle();//章节名
         // 每一讲 content、audio、video等
         ArticleInfoArticle article = detail.getArticle();
-        System.out.println("    |--" + article.getTitle());
+        log.info("    |--" + article.getTitle());
 
         String downloadContentMd = article.getContent_md();
         if (StrUtil.isEmpty(downloadContentMd)) {
@@ -408,7 +413,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
             // 关闭写入器
             writer.close();
             // 打印
-            System.out.println("      " + fileName + "下载完成");
+            log.info("      " + fileName + "下载完成");
             // 归档
             // 源文件路径
             Path sourcePath = Paths.get(downloadPath + fileName);
@@ -418,13 +423,13 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                 Files.copy(sourcePath, targetPath);
             } catch (IOException e) {
                 if (e instanceof FileAlreadyExistsException) {
-                    System.err.println("      " + fileName + "归档失败：文件已存在");
+                    log.error("      " + fileName + "归档失败：文件已存在");
                 } else {
                     e.printStackTrace();
                 }
             }
         } catch (IOException e) {
-            System.err.println("      " + fileName + "下载失败：" + e.getMessage());
+            log.error("      " + fileName + "下载失败：" + e.getMessage());
         }
     }
 
@@ -486,7 +491,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
 
         String downloadUrl = audio.getDownload_url();
         if (StrUtil.isEmpty(downloadUrl)) {
-            System.out.println("      没有音频内容，无需下载");
+            log.info("      没有音频内容，无需下载");
             return;
         }
 
@@ -513,7 +518,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
 
         String url = video.getUrl();
         if (StrUtil.isEmpty(url)) {
-            System.out.println("      没有视频内容，无需下载");
+            log.info("      没有视频内容，无需下载");
             return;
         }
         String downloadUrl = "https://media001.geekbang.org/" + url;
@@ -625,13 +630,16 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         switch (processFlag) {
             case 0:
                 HttpUtil.downloadFile(downloadUrl, downloadPath + fileName);
-                System.out.println("      " + fileName + "下载完成");
+                log.info("      " + fileName + "下载完成");
                 break;
             case 1:
                 tempFile(downloadPath + fileName);
                 break;
             default:
                 return;
+        }
+        if (!ARCHIVE_FLAG){
+            return;
         }
         // 归档
         File archiveDir = new File(archivePath);
@@ -646,7 +654,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
             Files.copy(sourcePath, targetPath);
         } catch (IOException e) {
             if (e instanceof FileAlreadyExistsException) {
-                System.err.println("      " + fileName + "归档失败：文件已存在");
+                log.error("      " + fileName + "归档失败：文件已存在");
             } else {
                 e.printStackTrace();
             }
@@ -664,15 +672,15 @@ public class GeekTimeServiceImpl implements GeekTimeService {
         try {
             // 创建空白文件
             if (file.createNewFile()) {
-                System.out.println("      临时文件：" + filePath);
+                log.info("      临时文件：" + filePath);
             } else {
-                System.out.println("      临时文件已存在，不要重复创建：" + filePath);
+                log.info("      临时文件已存在，不要重复创建：" + filePath);
             }
             // 关闭文件输出流
             FileOutputStream fos = new FileOutputStream(file);
             fos.close();
         } catch (IOException e) {
-            System.out.println("      新建临时文件失败: " + e.getMessage());
+            log.info("      新建临时文件失败: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -753,7 +761,7 @@ public class GeekTimeServiceImpl implements GeekTimeService {
                 File[] firstLevelSubDirectories = subDirectory.listFiles(File::isDirectory);
                 if (firstLevelSubDirectories != null) {
                     for (File firstLevelSubDirectory : firstLevelSubDirectories) {
-//                        System.out.println(subDirectory.getName()+" - " + firstLevelSubDirectory.getName());
+//                        log.info(subDirectory.getName()+" - " + firstLevelSubDirectory.getName());
                         map.put(firstLevelSubDirectory.getName(), subDirectory.getName());
                     }
                 }
