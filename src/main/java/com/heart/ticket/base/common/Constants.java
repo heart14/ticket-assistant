@@ -23,4 +23,9 @@ public class Constants {
      * 约定http请求头中token字段名为Authorization
      */
     public static final String FIELD_JWT_TOKEN = "Authorization";
+
+    /**
+     * redis缓存的默认过期时间10分钟，单位毫秒
+     */
+    public static final long REDIS_CACHE_ENTRY_TTL = 10 * 60 * 1000;
 }

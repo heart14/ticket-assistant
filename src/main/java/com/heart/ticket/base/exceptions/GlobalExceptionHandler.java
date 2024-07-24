@@ -30,6 +30,13 @@ public class GlobalExceptionHandler {
         return SysResponse.fail(e.getCode(), e.getMessage());
     }
 
+    @ExceptionHandler({org.springframework.web.HttpRequestMethodNotSupportedException.class})
+    public SysResponse restfulHandler(org.springframework.web.HttpRequestMethodNotSupportedException e) {
+        //接口请求方式异常
+        log.error("** restfulHandler ** :{}", e.getMessage(), e);
+        return SysResponse.fail(RespCode.BIZ_INVALID.getCode(), e.getMessage());
+    }
+
     @ExceptionHandler({Exception.class})
     public SysResponse exceptionHandler(Exception e) {
         //系统异常
