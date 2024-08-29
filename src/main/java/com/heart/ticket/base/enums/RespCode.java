@@ -18,7 +18,8 @@ public enum RespCode {
     SYS_EXCEPTION(1001, "异常"),
     BIZ_FAIL(2001, "失败"),
     BIZ_INVALID(3001, "非法"),
-    BIZ_MTSDK_EXCEPTION(2002, "美团请求异常"),
+    BIZ_SSH_EXCEPTION(2002, "SSH连接失败"),
+    BIZ_MTSDK_EXCEPTION(2003, "美团请求失败"),
     END(9999, "END LINE");
 
     private int code;
