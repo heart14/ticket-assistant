@@ -1,5 +1,7 @@
 package com.heart.ticket.demo;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * About:
  * Other:
@@ -13,6 +15,20 @@ public class LongNumberDemo {
     public static void main(String[] args) {
 
         System.out.println(EORDERID);
+
+
+        String json = "{\"now\":1728365332343}";
+
+        LongNumberTest longNumberTest = JSONObject.parseObject(json, LongNumberTest.class);
+
+        System.out.println(longNumberTest);
+
+
+        double d = 11.22;
+
+        float f = (float)d;
+
+        System.out.println(f);
 
     }
 }
