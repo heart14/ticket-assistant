@@ -147,7 +147,7 @@ public class HexiaoSnImportController {
     private void testConnection(Session session) throws SysException {
         String test;
         try {
-            test = executeCommand(session, "curl -X GET 'https://ecard.chinaums.com/hexiao/ums.meituan/heartbeat'");
+            test = executeCommand(session, "curl -X GET 'https:///hexiao/ums.meituan/heartbeat'");
         } catch (Exception e) {
             log.error("ssh execute fail");
             throw new SysException(RespCode.BIZ_SSH_EXCEPTION.getCode(), RespCode.BIZ_SSH_EXCEPTION.getMsg());

@@ -19,7 +19,7 @@ public class HexiaoSnImportListener extends AnalysisEventListener<SnInfo> {
 
     @Override
     public void invoke(SnInfo snInfo, AnalysisContext analysisContext) {
-        String curl = "curl -X POST 'https://ecard.chinaums.com/hexiao/ums.login/Login/createThirdSn' -H 'Content-Type: application/json' -d '{" +
+        String curl = "curl -X POST 'https:///hexiao/ums.login/Login/createThirdSn' -H 'Content-Type: application/json' -d '{" +
                 "\"sn\":\"" + snInfo.getSn().trim() + "\"," +
                 "\"instNo\":\"" + snInfo.getInstNo().trim() + "\"," +
                 "\"projectName\":\"" + snInfo.getProjectName().trim() + "\"," +
